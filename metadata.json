@@ -1,0 +1,6 @@
+{
+  "name": "Inventaris SSDI",
+  "description": "Aplikasi manajemen barang sederhana untuk mengelola perangkat SSDI dengan pendataan status kondisi, jumlah, kategori, serta ekspor-impor data JSON.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
