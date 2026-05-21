@@ -41,9 +41,14 @@ export default function ImportExportControls({
             .map((item: any) => ({
               id: typeof item.id === 'number' ? item.id : Date.now() + Math.random(),
               nama: typeof item.nama === 'string' && item.nama.trim() ? item.nama.trim() : (item.nama_barang || 'Tanpa Nama'),
-              kategori: typeof item.kategori === 'string' && item.kategori.trim() ? item.kategori.trim() : (item.kategori_barang || 'Umum'),
+              kategoriId: typeof item.kategoriId === 'number' ? item.kategoriId : 1,
+              supplierId: typeof item.supplierId === 'number' ? item.supplierId : null,
               jumlah: typeof item.jumlah === 'number' ? item.jumlah : (parseInt(item.jumlah) || 0),
-              kondisi: (item.kondisi === 'Baik' || item.kondisi === 'Rusak') ? item.kondisi : 'Baik'
+              minimalStok: typeof item.minimalStok === 'number' ? item.minimalStok : 3,
+              kondisi: (item.kondisi === 'Baik' || item.kondisi === 'Rusak') ? item.kondisi : 'Baik',
+              lokasi: typeof item.lokasi === 'string' ? item.lokasi : '',
+              createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date().toISOString(),
+              updatedAt: typeof item.updatedAt === 'string' ? item.updatedAt : new Date().toISOString()
             }));
 
           if (validData.length > 0) {

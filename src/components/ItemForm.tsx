@@ -1,34 +1,55 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Save, X, RotateCcw, PenTool } from 'lucide-react';
-import { InventarisItem } from '../types';
+import { InventarisItem, Kategori, Supplier } from '../types';
 
 interface ItemFormProps {
   editingItem: InventarisItem | null;
-  onSubmit: (item: Omit<InventarisItem, 'id'>) => void;
+  kategoris: Kategori[];
+  suppliers: Supplier[];
+  onSubmit: (item: Omit<InventarisItem, 'id' | 'createdAt' | 'updatedAt'>) => void;
   onCancelEdit: () => void;
 }
 
-export default function ItemForm({ editingItem, onSubmit, onCancelEdit }: ItemFormProps) {
+export default function ItemForm({
+  editingItem,
+  kategoris,
+  suppliers,
+  onSubmit,
+  onCancelEdit
+}: ItemFormProps) {
   const [nama, setNama] = useState('');
-  const [kategori, setKategori] = useState('');
+  const [kategoriId, setKategoriId] = useState<number>('');
+  const [supplierId, setSupplierId] = useState<number | ''>('');
   const [jumlah, setJumlah] = useState(1);
+  const [minimalStok, setMinimalStok] = useState(3);
   const [kondisi, setKondisi] = useState<'Baik' | 'Rusak'>('Baik');
+  const [lokasi, setLokasi] = useState('');
   const [error, setError] = useState<string | null>(null);
+
+  // Default first category on mount if available
+  useEffect(() => {
+    if (!editingItem && kategoris.length > 0 && !kategoriId) {
+      setKategoriId(kategoris[0].id);
+    }
+  }, [kategoris, editingItem]);
 
   // Sync editing item
   const editingItemId = editingItem?.id || null;
   useEffect(() => {
     if (editingItem) {
       setNama(editingItem.nama);
-      setKategori(editingItem.kategori);
+      setKategoriId(editingItem.kategoriId);
+      setSupplierId(editingItem.supplierId || '');
       setJumlah(editingItem.jumlah);
+      setMinimalStok(editingItem.minimalStok || 3);
       setKondisi(editingItem.kondisi);
+      setLokasi(editingItem.lokasi || '');
       setError(null);
     } else {
       resetForm();
     }
-  }, [editingItemId]); // Listening to primitive ID is optimized and safe!
+  }, [editingItemId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,9 +60,12 @@ export default function ItemForm({ editingItem, onSubmit, onCancelEdit }: ItemFo
     setError(null);
     onSubmit({
       nama: nama.trim(),
-      kategori: kategori.trim() || 'Umum',
+      kategoriId: Number(kategoriId) || (kategoris.length > 0 ? kategoris[0].id : 1),
+      supplierId: supplierId ? Number(supplierId) : null,
       jumlah: isNaN(jumlah) || jumlah < 0 ? 0 : jumlah,
-      kondisi
+      minimalStok: isNaN(minimalStok) || minimalStok < 0 ? 3 : minimalStok,
+      kondisi,
+      lokasi: lokasi.trim()
     });
     if (!editingItem) {
       resetForm();
@@ -50,9 +74,12 @@ export default function ItemForm({ editingItem, onSubmit, onCancelEdit }: ItemFo
 
   const resetForm = () => {
     setNama('');
-    setKategori('');
+    setKategoriId(kategoris.length > 0 ? kategoris[0].id : '');
+    setSupplierId('');
     setJumlah(1);
+    setMinimalStok(3);
     setKondisi('Baik');
+    setLokasi('');
     setError(null);
   };
 
@@ -68,7 +95,7 @@ export default function ItemForm({ editingItem, onSubmit, onCancelEdit }: ItemFo
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
-              className={`ml-2 text-xs px-2.5 py-0.5 rounded-full font-medium ${
+              className={`ml-2 text-xs px-2.5 py-0.5 rounded-full font-semibold ${
                 editingItem ? 'bg-indigo-100 text-indigo-800' : 'bg-green-100 text-green-800'
               }`}
             >
@@ -79,10 +106,10 @@ export default function ItemForm({ editingItem, onSubmit, onCancelEdit }: ItemFo
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
           {/* Nama Barang */}
           <div className="flex flex-col gap-1">
-            <label htmlFor="namaBarang" className="text-xs font-semibold text-gray-500">Nama Barang *</label>
+            <label htmlFor="namaBarang" className="text-xs font-bold text-gray-500">Nama Barang *</label>
             <input
               type="text"
               id="namaBarang"
@@ -93,22 +120,40 @@ export default function ItemForm({ editingItem, onSubmit, onCancelEdit }: ItemFo
             />
           </div>
 
-          {/* Kategori */}
+          {/* Kategori Select */}
           <div className="flex flex-col gap-1">
-            <label htmlFor="kategoriBarang" className="text-xs font-semibold text-gray-500">Kategori</label>
-            <input
-              type="text"
-              id="kategoriBarang"
-              placeholder="Contoh: Elektronik"
-              value={kategori}
-              onChange={(e) => setKategori(e.target.value)}
+            <label htmlFor="kategoriSelect" className="text-xs font-bold text-gray-500">Kategori Kelompok</label>
+            <select
+              id="kategoriSelect"
+              value={kategoriId}
+              onChange={(e) => setKategoriId(Number(e.target.value))}
               className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none bg-white transition-all text-gray-800"
-            />
+            >
+              {kategoris.map(k => (
+                <option key={k.id} value={k.id}>{k.nama}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Supplier Select */}
+          <div className="flex flex-col gap-1">
+            <label htmlFor="supplierSelect" className="text-xs font-bold text-gray-500">Supplier (Pemasok)</label>
+            <select
+              id="supplierSelect"
+              value={supplierId}
+              onChange={(e) => setSupplierId(e.target.value ? Number(e.target.value) : '')}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none bg-white transition-all text-gray-800"
+            >
+              <option value="">Tanpa Supplier</option>
+              {suppliers.map(s => (
+                <option key={s.id} value={s.id}>{s.nama}</option>
+              ))}
+            </select>
           </div>
 
           {/* Jumlah */}
           <div className="flex flex-col gap-1">
-            <label htmlFor="jumlahBarang" className="text-xs font-semibold text-gray-500">Jumlah Stok</label>
+            <label htmlFor="jumlahBarang" className="text-xs font-bold text-gray-500">Jumlah Stok</label>
             <input
               type="number"
               id="jumlahBarang"
@@ -120,9 +165,23 @@ export default function ItemForm({ editingItem, onSubmit, onCancelEdit }: ItemFo
             />
           </div>
 
+          {/* Minimal Stok Peringatan */}
+          <div className="flex flex-col gap-1">
+            <label htmlFor="minStokBarang" className="text-xs font-bold text-gray-500">Batas Stok Minimum</label>
+            <input
+              type="number"
+              id="minStokBarang"
+              placeholder="3"
+              min="0"
+              value={minimalStok}
+              onChange={(e) => setMinimalStok(parseInt(e.target.value) || 0)}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none bg-white transition-all text-gray-800"
+            />
+          </div>
+
           {/* Kondisi */}
           <div className="flex flex-col gap-1">
-            <label htmlFor="kondisiBarang" className="text-xs font-semibold text-gray-500">Kondisi</label>
+            <label htmlFor="kondisiBarang" className="text-xs font-bold text-gray-500">Kondisi Fisik</label>
             <select
               id="kondisiBarang"
               value={kondisi}
@@ -133,10 +192,23 @@ export default function ItemForm({ editingItem, onSubmit, onCancelEdit }: ItemFo
               <option value="Rusak">⚠️ Rusak</option>
             </select>
           </div>
+
+          {/* Lokasi Gudang */}
+          <div className="flex flex-col gap-1 sm:col-span-2">
+            <label htmlFor="lokasiBarang" className="text-xs font-bold text-gray-500">Lokasi Rak / Gudang Penyimpanan</label>
+            <input
+              type="text"
+              id="lokasiBarang"
+              placeholder="Contoh: Gudang Barat - Rak C4"
+              value={lokasi}
+              onChange={(e) => setLokasi(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none bg-white transition-all text-gray-800"
+            />
+          </div>
         </div>
 
         {error && (
-          <p id="form-error-msg" className="text-xs font-semibold text-rose-600 block transition-all">
+          <p id="form-error-msg" className="text-xs font-semibold text-rose-650 block transition-all">
             ❌ {error}
           </p>
         )}
@@ -145,7 +217,7 @@ export default function ItemForm({ editingItem, onSubmit, onCancelEdit }: ItemFo
           <button
             type="submit"
             id="simpanBtn"
-            className="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm px-5 py-2.5 rounded-lg shadow-sm flex items-center gap-1.5 transition duration-200 cursor-pointer"
+            className="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs px-5 py-2.5 rounded-lg shadow-sm flex items-center gap-1.5 transition duration-205 cursor-pointer font-bold"
           >
             <Save className="w-4 h-4" />
             <span>Simpan Barang</span>
@@ -156,7 +228,7 @@ export default function ItemForm({ editingItem, onSubmit, onCancelEdit }: ItemFo
               type="button"
               id="batalEditBtn"
               onClick={onCancelEdit}
-              className="bg-gray-400 hover:bg-gray-500 active:scale-95 text-white text-sm px-4 py-2.5 rounded-lg shadow-sm flex items-center gap-1.5 transition duration-200 cursor-pointer"
+              className="bg-gray-400 hover:bg-gray-500 active:scale-95 text-white text-xs px-4 py-2.5 rounded-lg shadow-sm flex items-center gap-1.5 transition duration-205 cursor-pointer font-bold"
             >
               <X className="w-4 h-4" />
               <span>Batal Edit</span>
@@ -167,14 +239,14 @@ export default function ItemForm({ editingItem, onSubmit, onCancelEdit }: ItemFo
             type="button"
             id="resetFormBtn"
             onClick={resetForm}
-            className="border border-gray-300 bg-white hover:bg-gray-50 active:scale-95 text-gray-700 text-sm px-4 py-2.5 rounded-lg transition duration-200 cursor-pointer flex items-center gap-1.5"
+            className="border border-gray-300 bg-white hover:bg-gray-50 active:scale-95 text-gray-700 text-xs px-4 py-2.5 rounded-lg transition duration-205 cursor-pointer flex items-center gap-1.5 font-semibold"
           >
             <RotateCcw className="w-4 h-4 text-gray-500" />
             <span>Reset Form</span>
           </button>
         </div>
       </form>
-      <p className="text-[10px] text-gray-400 mt-2.5">* Nama barang wajib diisi untuk menyimpan data.</p>
+      <p className="text-[10px] text-gray-400 mt-2.5">* Nama barang wajib diisi untuk menyimpan data ke database SSDI.</p>
     </div>
   );
 }
