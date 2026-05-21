@@ -1,15 +1,16 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, Filter, Edit, Trash2, ArrowUpDown } from 'lucide-react';
-import { InventarisItem } from '../types';
+import { InventarisItem, UserRole } from '../types';
 
 interface ItemTableProps {
   items: InventarisItem[];
+  role: UserRole;
   onEdit: (item: InventarisItem) => void;
   onDelete: (id: number) => void;
 }
 
-export default function ItemTable({ items, onEdit, onDelete }: ItemTableProps) {
+export default function ItemTable({ items, role, onEdit, onDelete }: ItemTableProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterKondisi, setFilterKondisi] = useState<'all' | 'Baik' | 'Rusak'>('all');
   const [sortBy, setSortBy] = useState<'nama' | 'jumlah' | 'default'>('default');
@@ -121,7 +122,9 @@ export default function ItemTable({ items, onEdit, onDelete }: ItemTableProps) {
                   </div>
                 </th>
                 <th className="px-4 py-3.5">Kondisi</th>
-                <th className="px-4 py-3.5 text-center w-36">Aksi</th>
+                <th className="px-4 py-3.5 text-center w-36">
+                  {role === 'admin' ? 'Aksi' : 'Status'}
+                </th>
               </tr>
             </thead>
             <tbody id="tabelBarang" className="divide-y divide-gray-100 bg-white">
@@ -174,22 +177,26 @@ export default function ItemTable({ items, onEdit, onDelete }: ItemTableProps) {
                         )}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <button
-                            onClick={() => onEdit(item)}
-                            className="inline-flex items-center gap-1 bg-indigo-50 hover:bg-indigo-100 active:scale-95 text-indigo-700 px-2.5 py-1 rounded-md text-xs font-medium transition cursor-pointer"
-                          >
-                            <Edit className="w-3.5 h-3.5" />
-                            <span>Edit</span>
-                          </button>
-                          <button
-                            onClick={() => onDelete(item.id)}
-                            className="inline-flex items-center gap-1 bg-rose-50 hover:bg-rose-100 active:scale-95 text-rose-600 px-2.5 py-1 rounded-md text-xs font-medium transition cursor-pointer"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            <span>Hapus</span>
-                          </button>
-                        </div>
+                        {role === 'admin' ? (
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button
+                              onClick={() => onEdit(item)}
+                              className="inline-flex items-center gap-1 bg-indigo-50 hover:bg-indigo-100 active:scale-95 text-indigo-700 px-2.5 py-1 rounded-md text-xs font-medium transition cursor-pointer"
+                            >
+                              <Edit className="w-3.5 h-3.5" />
+                              <span>Edit</span>
+                            </button>
+                            <button
+                              onClick={() => onDelete(item.id)}
+                              className="inline-flex items-center gap-1 bg-rose-50 hover:bg-rose-100 active:scale-95 text-rose-600 px-2.5 py-1 rounded-md text-xs font-medium transition cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Hapus</span>
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 font-medium text-xs font-mono">-</span>
+                        )}
                       </td>
                     </motion.tr>
                   ))

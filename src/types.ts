@@ -5,3 +5,12 @@ export interface InventarisItem {
   jumlah: number;
   kondisi: 'Baik' | 'Rusak';
 }
+
+export type UserRole = 'user' | 'admin';
+
+export interface AuthState {
+  role: UserRole;
+  loggedIn: boolean;
+  time: number;
+}
+
