@@ -746,7 +746,7 @@ export default function App() {
 
         {/* SYSTEM FOOTER */}
         <footer className="text-center text-slate-400 text-xs py-4 flex flex-col items-center justify-center gap-1 font-semibold print:hidden">
-          <p className="font-extrabold text-slate-500">Ruang SSDI</p>
+          <p className="font-extrabold text-slate-500">RUANG SSDI</p>
           <p>Gedung Al Ghazali Lt 1</p>
           <p className="text-[11px] text-slate-400/80">Jl. Kemerdekaan Barat No.12, Kesugihan, Cilacap, Jawa Tengah 53274</p>
         </footer>
