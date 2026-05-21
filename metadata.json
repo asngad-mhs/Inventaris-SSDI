@@ -1,6 +1,6 @@
 {
   "name": "Inventaris SSDI",
-  "description": "Aplikasi manajemen barang sederhana untuk mengelola perangkat SSDI dengan pendataan status kondisi, jumlah, kategori, serta ekspor-impor data JSON.",
+  "description": "Sistem Informasi Manajemen Logistik Gudang & Peminjaman Barang Modern di Ruang SSDI Gedung Al Ghazali Lt 1, dilengkapi pelacakan status, supplier, riwayat sirkulasi, log audit, dan laporan mendalam.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
